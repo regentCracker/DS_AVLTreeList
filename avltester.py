@@ -29,7 +29,7 @@ def Q2(n):
     sol.append(s1[3])
     sol.append(s2[4])
     sol.append(s2[3])
-    
+
     t1 = time.time_ns()
     sol.append(t1-t0)
 
@@ -54,7 +54,7 @@ def Q2(n):
         lst.insert(r ,r)
         i+=1
         r = int(random.random()*(le/4 - i))
-        lst.delete(r)   
+        lst.delete(r)
     t1 = time.time_ns()
     sol.append(t1-t0)
 
@@ -104,7 +104,7 @@ def chksize(lst):
     return sz
 
 
-
+#"""
 random.random()
 for i in range(6,20001):
     r = int(random.random()*(i-1))
@@ -113,8 +113,11 @@ r2 = int(random.random()*(20000))
 for i in range(0,r2):
     r = int(random.random()*(i-1))
     tlist2.insert(r ,r)
-print(tlist.listToArray())
-print("res-" + str(tlist.search(10)))
+print(tlist.listToArray()[:100])
+for i in range(10):
+    print(tlist.retrieve(i))
+#print("res-" + str(tlist.search(10)))
+#"""
     # lst = tlist.listToArray()
     # if (lst[r] != lst[r]):
         #  print(" oi "+ str(i))
@@ -136,15 +139,18 @@ print("res-" + str(tlist.search(10)))
 # #     print(lst2.insert(r ,r))
 
 # tlist.concat(tlist2)
+
 chksize(tlist.getRoot())
 # print(tlist.listToArray())
 r = int(random.random()*tlist.length)
 spl = tlist.split(r)
-print(str(spl[0].listToArray())+ " " + str(spl[2].listToArray()))
+print("aaa")
+print(str(spl[0].listToArray())[:10]+ " " + str(spl[2].listToArray())[:10])
 t1 =  chksize(spl[0].getRoot())
 print("****")
 t2 = chksize(spl[2].getRoot())
 print(t1 - t2)
+#"""
 
 
 # # print()
@@ -173,4 +179,3 @@ print(t1 - t2)
 # #     print(str(r) + "- " + str(tlist.listToArray()))
 # #     chksize(tlist.getRoot())
 print("fin")
-

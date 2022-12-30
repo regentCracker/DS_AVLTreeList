@@ -3,7 +3,7 @@
 # name1    - Oded Kesler
 # id2      - 315427799
 # name2    - Nimrod Cohen
-
+import random
 
 """A class represnting a node in an AVL tree"""
 
@@ -207,7 +207,9 @@ class AVLNode(object):
         return self.getParent().isRealNode() and not self.getRight().isRealNode() and not self.getLeft().isRealNode()
 
     def __str__(self):
-        res = self.getValue()
+        if(self==None):
+            return ""
+        res = str(self.getValue())
         l = ""
         r = ""
         if(self.getLeft().isRealNode()):
@@ -218,6 +220,56 @@ class AVLNode(object):
             return res
         res += "("+l+"|"+r+")"
         return res
+
+    def display(self):
+        lines, *_ = self._display_aux()
+        for line in lines:
+            print(line)
+
+    def _display_aux(self):
+        """Returns list of strings, width, height, and horizontal coordinate of the root."""
+        # No child.
+        if self.right is None and self.left is None:
+            line = '%s' % self.value
+            width = len(line)
+            height = 1
+            middle = width // 2
+            return [line], width, height, middle
+
+        # Only left child.
+        if self.right is None:
+            lines, n, p, x = self.left._display_aux()
+            s = '%s' % self.value
+            u = len(s)
+            first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s
+            second_line = x * ' ' + '/' + (n - x - 1 + u) * ' '
+            shifted_lines = [line + u * ' ' for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, n + u // 2
+
+        # Only right child.
+        if self.left is None:
+            lines, n, p, x = self.right._display_aux()
+            s = '%s' % self.value
+            u = len(s)
+            first_line = s + x * '_' + (n - x) * ' '
+            second_line = (u + x) * ' ' + '\\' + (n - x - 1) * ' '
+            shifted_lines = [u * ' ' + line for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, u // 2
+
+        # Two children.
+        left, n, p, x = self.left._display_aux()
+        right, m, q, y = self.right._display_aux()
+        s = '%s' % self.value
+        u = len(s)
+        first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s + y * '_' + (m - y) * ' '
+        second_line = x * ' ' + '/' + (n - x - 1 + u + y) * ' ' + '\\' + (m - y - 1) * ' '
+        if p < q:
+            left += [n * ' '] * (q - p)
+        elif q < p:
+            right += [m * ' '] * (p - q)
+        zipped_lines = zip(left, right)
+        lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
+        return lines, n + m + u, max(p, q) + 2, n + u // 2
 
 
 """
@@ -233,7 +285,7 @@ class AVLTreeList(object):
 
     def __init__(self):
         self.root = None
-        self.length = 0
+        self.Length = 0
 
 
     """returns whether the list is empty
@@ -258,6 +310,8 @@ class AVLTreeList(object):
 	"""
 
     def retrieve(self, i):
+        if(self.Length <= i or i<0):
+            return None
         return AVLTreeList.treeSelect(self.root, i).getValue()
 
 
@@ -281,12 +335,12 @@ class AVLTreeList(object):
         new_node = AVLNode(val)
         new_node.setLeaf()
 
-        if self.length == 0:
+        if self.Length == 0:
             self.root = new_node
-            self.length += 1
+            self.Length += 1
             return 0
 
-        elif i == self.length:
+        elif i == self.Length:
             new_parent = AVLTreeList.getMaxInsert(self.root)
             new_parent.setRight(new_node)
 
@@ -301,7 +355,7 @@ class AVLTreeList(object):
 
         new_node.setParent(new_parent)
         rotations_counter = AVLTreeList.BalanceTreeFrom(self, new_parent)
-        self.length += 1
+        self.Length += 1
 
         return rotations_counter
 
@@ -322,9 +376,12 @@ class AVLTreeList(object):
 	"""
 
     def delete(self, i):
-        if self.length == 1:
+        if(i>=self.Length):
+            return -1
+        if self.Length == 1:
             self.root = None
-            self.length = 0;
+            self.Length = 0;
+            return 0
         relevant_node = AVLTreeList.treeSelectDel(self.root, i)
         parent = relevant_node.getParent()
         relevant_node.setParent(AVLNode(""))
@@ -370,7 +427,7 @@ class AVLTreeList(object):
                 relevant_node.setRight(AVLNode(""))
 
         rotations_counter = AVLTreeList.BalanceTreeFrom(self, fix_from)
-        self.length -= 1
+        self.Length -= 1
 
         return rotations_counter
 
@@ -413,7 +470,7 @@ class AVLTreeList(object):
 
     def listToArray(self):
         result = []
-        if self.length == 0:
+        if self.Length == 0:
             return result
 
         stack = []
@@ -439,7 +496,39 @@ class AVLTreeList(object):
 	"""
 
     def length(self):
-        return self.length()
+        return self.Length
+
+    """
+    Our solution takes O(log(n)n).
+    It generates a permutated list of the numbers 1-n.
+    Then, for each element i in the list we insert the i-th element to the last position (log(n) to retrieve and to insert).
+    @rtype: AVLTreeList
+    @returns: a permutated AVLTreeList with the same elements
+
+    """
+    def permutaion(self):
+        result = AVLTreeList()
+        for i in AVLTreeList.perm(self.length()):
+            result.insert(result.length(),self.retrieve(i-1))
+        return result
+    """
+    Our solution takes O(log(n)n).
+    First, we create a list and put in it all of the elements in the tree (this takes O(log(n)n) because we retrieve in O(log(n)) n times).
+    Then, sort the list in O(log(n)n) using quick sort.
+    Finally we insert n times to a new tree - every time the current index to the last position.
+    @rtype: AVLTreeList
+    @returns: a sorted AVLTreeList with the same elements.
+
+    """
+    def sort(self):
+        result = AVLTreeList()
+        nodes = [self.retrieve(i) for i in range(self.length())]
+        AVLTreeList.quickSort([self.retrieve(i) for i in range(self.length())],0,len(nodes)-1)
+        for node in nodes:
+            result.insert(result.length(),node)
+        return result
+
+
 
 
     """splits the list at the i'th index by:
@@ -463,13 +552,13 @@ class AVLTreeList(object):
         snode = vars[2]
         llst = AVLTreeList()
         llst.setRoot( leftL[len(leftL) - 1][0])
-        llst.length = llst.root.getSize() + 1
+        llst.Length = llst.root.getSize() + 1
         llst.getRoot().setParent(AVLNode(""))
         print(len(leftL) - 1)
         for i in range(1,len(leftL)):
             tlst = AVLTreeList()
             tlst.setRoot(leftL[len(leftL) - i - 1][1])
-            tlst.length = tlst.getRoot().getSize() + 1
+            tlst.Length = tlst.getRoot().getSize() + 1
             tlst.getRoot().setParent(AVLNode(""))
             nnode = leftL[len(leftL) - i - 1][0]
             nnode.setLeaf()
@@ -478,13 +567,13 @@ class AVLTreeList(object):
 
         rlst = AVLTreeList()
         rlst.setRoot( rightL[len(rightL) - 1][0])
-        rlst.length = rlst.root.getSize() + 1
+        rlst.Length = rlst.root.getSize() + 1
         rlst.getRoot().setParent(AVLNode(""))
         print(len(rightL) - 1)
         for i in range(1,len(rightL)):
             tlst = AVLTreeList()
             tlst.setRoot(rightL[len(rightL) - i - 1][1])
-            tlst.length = tlst.getRoot().getSize() + 1
+            tlst.Length = tlst.getRoot().getSize() + 1
             tlst.getRoot().setParent(AVLNode(""))
             nnode = rightL[len(rightL) - i - 1][0]
             nnode.setLeaf()
@@ -507,7 +596,7 @@ class AVLTreeList(object):
     def concat(self, lst):
         original_height_diff = self.root.getHeight() - lst.root.getHeight()
         new_root = AVLTreeList.getMax(self.root)
-        self.delete(self.length - 1)
+        self.delete(self.Length - 1)
         self.join(lst, new_root)
         return original_height_diff
 
@@ -534,23 +623,23 @@ class AVLTreeList(object):
     def join(self, lst2, new_root):
         height_diff = self.root.getHeight() - lst2.root.getHeight()
         new_root.setLeaf()
-        if lst2.length == 0:
-            if self.length == 0:
+        if lst2.Length == 0:
+            if self.Length == 0:
                 self.setRoot(new_root)
-                self.length = 1
+                self.Length = 1
                 return self
             parent = self.getMaxInsert(self.getRoot())
             parent.setRight(new_root)
             new_root.setParent(parent)
             new_root.setSize(new_root.getRight().getSize() + new_root.getLeft().getSize() + 2)
-            self.length += 1
+            self.Length += 1
             AVLTreeList.BalanceTreeFrom(self,parent)
             return self
-        elif self.length == 0:
+        elif self.Length == 0:
             parent = AVLTreeList.treeSelectInsert(lst2.getRoot(), 0)
             parent.setLeft(new_root)
             new_root.setParent(parent)
-            lst2.length += 1
+            lst2.Length += 1
             new_root.setSize(new_root.getRight().getSize() + new_root.getLeft().getSize() + 2)
             AVLTreeList.BalanceTreeFrom(lst2, parent)
             self = lst2
@@ -572,7 +661,7 @@ class AVLTreeList(object):
             start = lst2.root
 
             while start.getHeight() > left_height:
-                start.setSize(start.getSize() + self.length + 1)
+                start.setSize(start.getSize() + self.Length + 1)
                 start = start.getLeft()
 
             new_root.setParent(start.getParent())
@@ -595,7 +684,7 @@ class AVLTreeList(object):
             start = self.root
 
             while start.getHeight() > right_height:
-                start.setSize(start.getSize() + lst2.length + 1)
+                start.setSize(start.getSize() + lst2.Length + 1)
                 start = start.getRight()
 
             new_root.setParent(start.getParent())
@@ -611,7 +700,7 @@ class AVLTreeList(object):
 
             lst2.setRoot(None)
 
-        self.length = lst2.length + self.length + 1
+        self.Length = lst2.Length + self.Length + 1
         return self
 
 
@@ -919,10 +1008,10 @@ class AVLTreeList(object):
     def BalanceTreeFrom(tree_list, node):
         counter = 0
         while node.isRealNode():
-            prev = node.getHeight()
+            #prev = node.getHeight()
             node.setHeight(max(node.getLeft().getHeight(),node.getRight().getHeight()) + 1)
-            if prev != node.getHeight():
-                counter += 1
+            #if prev != node.getHeight():
+                #counter += 1
             balance_factor = node.getBalanceFactor()
 
             if balance_factor == -2:
@@ -961,14 +1050,14 @@ class AVLTreeList(object):
         if bf == 2 and child_bf in [1, 0]:  # LL rotation
             node.setLeft(child.getRight())
 
-            """node.getLeft().setParent(node)
+            node.getLeft().setParent(node)
             child.setRight(node)
             child.setParent(node.getParent())
             child.getParent().setProperChild(tree_list, child, node)
             node.setParent(child)
             node.setSize(node.getRight().getSize() + node.getLeft().getSize() + 2)
             child.setSize(child.getRight().getSize() + child.getLeft().getSize() + 2)
-            node.setHeight(max(node.getLeft().getHeight(), node.getRight().getHeight()) + 1)"""
+            node.setHeight(max(node.getLeft().getHeight(), node.getRight().getHeight()) + 1)
             return 1
 
         if bf == -2 and child_bf in [-1, 0]:  # Left rotation
@@ -1022,3 +1111,65 @@ class AVLTreeList(object):
             return 2
         if(node is tree_list.getRoot()):
             tree_list.setRoot(node.getParent())
+    def display(self):
+        if(self.Length == 0):
+            print("<EmptyList>")
+            return
+        self.getRoot().display()
+    """
+	@type n: int
+    @param tree_list: length of returned list
+    @pre: n>0
+    @rtype: list
+    @returns: a permutation of the list [1,...,n]
+    """
+    @staticmethod
+    def perm(n):
+        res = [i for i in range(1,n+1)]
+        for pivot in range(1,n):
+            switch = (random.randint(0,pivot),pivot)
+            res[switch[0]], res[switch[1]] = res[switch[1]], res[switch[0]]
+        return res
+    """
+    function to find the partition for the quicksort
+
+    @type array: list of elements
+    @array: the list to be sorted
+    @pre: array is totally an ordered set.
+    @type low: int
+    @param low: index to start partition from
+    @type high: int
+    @param high: index to stop partition from
+    @rtype: int
+    @returns: the partition position
+    """
+    @staticmethod
+    def partition(array, low, high):
+      pivot = array[high]
+      i = low - 1
+      for j in range(low, high):
+        if array[j] <= pivot:
+          i = i + 1
+          (array[i], array[j]) = (array[j], array[i])
+      (array[i + 1], array[high]) = (array[high], array[i + 1])
+      return i + 1
+
+    """
+    function to perform quicksort
+
+    @type array: list of elements
+    @array: the list to be sorted
+    @pre: array is totally an ordered set.
+    @type low: int
+    @param low: index to start sorting from
+    @type high: int
+    @param high: index to stop sorting from
+    @rtype: None
+    @post: array should be sorted from lowest to highest
+    """
+    @staticmethod
+    def quickSort(array, low, high):
+      if low < high:
+        pi = AVLTreeList.partition(array, low, high)
+        AVLTreeList.quickSort(array, low, pi - 1)
+        AVLTreeList.quickSort(array, pi + 1, high)
