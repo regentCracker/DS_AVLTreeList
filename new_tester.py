@@ -29,7 +29,7 @@ tlist2 = avl_skeleton.AVLTreeList()
 
 #"""
 tlist = avl_skeleton.AVLTreeList()
-#"""
+"""
 index=0
 li = [17,8,22,4,12,20,26,2,6,10,14,19,21,24,28,1,3,5,7,9,11,13,15,18,23,25,27,30,0,1.5,3.5,7.5,15.5,29,31,-0.5,-1]
 line=li[index]#input()
@@ -77,7 +77,7 @@ print(height_diff)
 print(tlist.getRoot())
 print(tlist.search(7))
 
-#"""
+"""
 
 
 """
@@ -128,6 +128,35 @@ tlist.display()
 tlist.delete(2)
 tlist.display()
 """
+def chksize(lst):
+    if not lst.isRealNode():
+        if -1 != lst.getSize():
+            print(" oi NotReal "+ str(lst.getValue()) + " " + str(lst.getSize()))
+        if -1 != lst.getHeight():
+            print(" oi NotReal "+ str(lst.getValue()) + " " + str(lst.getHeight()))
+        return -1
+    sz = chksize(lst.getRight())+chksize(lst.getLeft()) + 2
+    hi = max(lst.getRight().getHeight(),lst.getLeft().getHeight()) + 1
+    if sz != lst.getSize():
+        print(" oi "+ str(tlist.treeRank(lst))+" "+ str(lst.getValue()) + " " + str(lst.getSize() - sz)+ " " + str(lst.getSize())+" " + str(sz))
+    if hi != lst.getHeight():
+        print(" vey "+ str(tlist.treeRank(lst))+" "+ str(lst.getValue()))
+    if (lst.getRight().getHeight() - lst.getLeft().getHeight()) not in [-1,0,1]:
+        print(" oof "+ str(tlist.treeRank(lst))+" "+ str(lst.getValue()) + " " + str(lst.getRight().getHeight() - lst.getLeft().getHeight()))
+    return sz
+tlist.insert(0,"0")
+for i in range(20000):
+    tlist.insert(randrange(tlist.length()),str(i))
+print(tlist.getRoot().getSize())
+tlist2 = avl_skeleton.AVLTreeList()
+
+tlist2.insert(0,"0")
+for i in range(20000):
+    tlist2.insert(randrange(tlist2.length()),str(i))
+tlist.concat(tlist2)
+print(tlist.getRoot().getSize())
+chksize(tlist.getRoot())
+
 
 
 

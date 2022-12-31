@@ -1,0 +1,5 @@
+Permutation:
+Our solution takes O(log(n)n). It generates a permutated list of the numbers 1-n. Then, for each element i in the list we insert the i-th element to the last position (log(n) to retrieve and to insert). 
+Remark: Technically we could have shown an O(n) amortized solution because we know re-balancing is O(1) amortized. Therefore, if we had: traversed the tree and saved it into a list in O(n), kept a pointer to the last element in the new tree O(1); than we could have inserted all these elements in an amortized time cost of O(n). Overall O(n) amortized. 
+Sort:
+Our solution takes O(log(n)n). First, we create a list and put in it all of the elements in the tree (this takes O(log(n)n) because we retrieve in O(log(n)) n times). Then, sort the list in O(log(n)n) using quick sort. Finally we insert n times to a new tree - every time the current index to the last position.
